@@ -1,156 +1,196 @@
-# AI Engineering Fundamentals
+# 🎨 ExcaliDraw AI Version
 
-This is a companion repo for the [AI Engineering Fundamentals course on Frontend Masters](https://frontendmasters.com/courses/ai-engineering/). In this course, you build an agentic diagram design tool, then learn to evaluate and improve it using professional AI engineering practices.
+An AI-powered version of Excalidraw that allows users to create, edit, and visualize diagrams using natural language prompts. The application combines the simplicity of hand-drawn diagrams with the power of Artificial Intelligence to automate diagram generation and enhance productivity.
 
-You build a Cloudflare Workers agent that controls an Excalidraw canvas through tool calls. Then you measure it with evals, and across the rest of the course you systematically improve it (context engineering, better tools, RAG, generative UI, human-in-the-loop, planning, data flywheel) and watch the eval scores move.
+## 🚀 Features
 
-![The diagram design tool](./assets/screenshot.png)
+* ✨ AI-generated diagrams from text prompts
+* 🎨 Interactive Excalidraw canvas
+* 🔄 Real-time diagram editing
+* 📤 Export diagrams as PNG, SVG, or JSON
+* 🤖 AI-assisted flowchart creation
+* 📱 Responsive user interface
+* 🌙 Dark and Light mode support
+* 💾 Auto-save functionality
+* 🔍 Zoom and pan controls
+* 🔗 Shareable diagram links
 
-## What you'll build
+## 🛠️ Tech Stack
 
-A live diagramming agent that:
+### Frontend
 
-- Reads natural language requests ("draw a sequence diagram of an OAuth login")
-- Controls an Excalidraw canvas via structured tool calls (add/update/remove elements)
-- Reads the live canvas state on demand
-- Searches the web for fresh information when it needs to
-- Searches a private knowledge corpus via RAG when it needs precise reference material
-- Streams responses, shows tool status, handles approvals, and gets better at all of this as you measure it
+* React.js
+* TypeScript
+* Tailwind CSS
+* Excalidraw
 
-By the end you have a working agent and the discipline to evaluate and improve any agent you build next.
+### Backend
 
-## How the course is organized
+* Node.js
+* Express.js
 
-Each lesson is its own git branch. The branch sequence is:
+### AI Integration
 
-```
-lesson-1 → lesson-2 → ... → lesson-9 (latest)
-```
+* OpenAI API / Gemini API / Custom LLM
 
-Each lesson branch contains:
+### Database (Optional)
 
-- The solution for the previous lesson (so you can catch up if you fall behind)
-- The notes for the current lesson under `lessons/<lesson-name>/index.md`
+* MongoDB
+* Firebase
 
-There are also two convenience branches:
-
-- **`main`** — points at the latest lesson so far. This is what you see when you land on the GitHub page.
-- **`complete`** — same as `main`, an explicit name for "everything that exists right now."
-
-So if you fall behind in lesson 5, you can `git checkout lesson-6` to grab the lesson 5 solution and pick up from there. If you want to see everything, `git checkout complete`.
-
-### Lesson notes
-
-Notes live alongside the code under `lessons/`:
-
-```
-lessons/
-  01-intro-to-ai-engineering/
-    index.md
-  02-your-first-cloudflare-agent/
-    index.md
-  ...
-```
-
-You can read them three ways:
-
-- **Directly on GitHub or in your editor** — they're plain markdown.
-- **In Obsidian** — open the `lessons/` directory as a vault.
-- **As a local site** — run `npm run docs` to serve them with VitePress at http://localhost:5170 so it doesn't conflict with the Drawing Application.
-
-## Setup
-
-### 1. Clone and install
+## 📂 Project Structure
 
 ```bash
-git clone <this repo url>
-cd intro-ai-engineering
+ExcaliDraw-AI-VERSION/
+│
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   ├── hooks/
+│   ├── utils/
+│   └── App.tsx
+│
+├── server/
+│   ├── routes/
+│   ├── controllers/
+│   └── services/
+│
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## ⚙️ Installation
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Pranshu51/ExcaliDraw-AI-VERSION.git
+```
+
+### Navigate to Project
+
+```bash
+cd ExcaliDraw-AI-VERSION
+```
+
+### Install Dependencies
+
+```bash
 npm install
 ```
 
-### 2. Create accounts
-
-You need accounts at four services. Three are free with no credit card. One needs a credit card but the costs for this course are pennies.
-
-| Service | Why | Cost | Credit card required? |
-|---|---|---|---|
-| **OpenAI** | LLM provider for the agent | A few cents for the whole course | **Yes** |
-| **Upstash Vector** | Vector store for RAG (lesson 8) | Free tier, very generous | No |
-| **Braintrust** | Eval platform (lessons 4+) | Free tier | No |
-| **Tavily** | Web search API for the agent's `searchWeb` tool (lesson 7) | Free tier, 1000 searches/month | No |
-
-#### OpenAI
-
-1. Sign up at [platform.openai.com](https://platform.openai.com).
-2. Add a payment method. The course costs pennies but OpenAI requires a card on file before issuing API keys.
-3. Create an API key under **API keys**. Save it for the next step.
-
-#### Upstash Vector
-
-1. Sign up at [upstash.com](https://upstash.com). No credit card needed.
-2. Go to **Vector** in the console and click **Create Index**.
-3. Pick any embedding model from the dropdown — `mixedbread-ai/mxbai-embed-large-v1` is a good default. The model is hosted by Upstash, which is what lets the embed script and the agent skip the embedding step entirely.
-4. Pick a region close to you. Free tier is fine.
-5. After creation, the index page shows `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN`. Save both.
-
-#### Braintrust
-
-1. Sign up at [braintrust.dev](https://braintrust.dev). No credit card needed.
-2. Create an API key from settings. Save it.
-
-#### Tavily
-
-1. Sign up at [tavily.com](https://tavily.com). No credit card needed.
-2. Get your API key from the dashboard. Save it.
-
-### 3. Configure environment variables
-
-Create `.dev.vars` at the project root:
-
-```
-OPENAI_API_KEY=sk-...
-UPSTASH_VECTOR_REST_URL=https://...upstash.io
-UPSTASH_VECTOR_REST_TOKEN=...
-BRAINTRUST_API_KEY=sk-...
-TAVILY_API_KEY=tvly-...
-```
-
-The Worker reads from this file via `wrangler dev` automatically. Node scripts (`npm run embed`, `npm run eval`) read it via `dotenv-cli`.
-
-### 4. Run things
+### Start Development Server
 
 ```bash
-npm run dev      # start the app at http://localhost:5173 (or 5174/5175 if 5173 is taken)
-npm run docs     # serve the lesson notes locally
-npm run embed    # rebuild the RAG vector index from data/corpus/ (lesson 8+)
-npm run eval     # run the eval suite (lesson 4+)
+npm run dev
 ```
 
-The first time you start a lesson that introduces a new service, the relevant lesson notes will tell you when to use these commands.
+The application will run on:
 
-## Using the lessons
+```bash
+http://localhost:5173
+```
 
-Recommended flow:
+## 🔑 Environment Variables
 
-1. **Watch / read the lesson talk first.** The notes have a theory section at the top.
-2. **Live-code along.** The notes contain the full code for every change in fenced code blocks. You can copy / paste if you fall behind.
-3. **Run it.** Each lesson has a clear "this is what success looks like" moment — a working chat, an eval score, a new tool call in the trace.
-4. **Move to the next branch when you're ready.** `git checkout lesson-N+1`.
+Create a `.env` file in the root directory:
 
-If you get stuck, the next branch contains the previous lesson's solution. So if lesson 5 isn't compiling for you, `git checkout lesson-6`, look at the working state, then go back to lesson-5 and figure out the diff.
+```env
+VITE_OPENAI_API_KEY=your_api_key
+VITE_GEMINI_API_KEY=your_api_key
+```
 
-## Tech stack
+## 🤖 How It Works
 
-- **Runtime**: Node + Cloudflare Workers (local via `wrangler dev`, no deployment needed)
-- **Frontend**: Vite + React + Excalidraw
-- **Agent**: AI SDK + Cloudflare Agents SDK (Durable Objects, `useAgentChat`)
-- **Vector store**: Upstash Vector (lesson 8+)
-- **Evals**: Braintrust (lesson 4+)
-- **Web search**: Tavily (lesson 7+)
+1. User enters a text prompt.
+2. AI interprets the prompt.
+3. Structured diagram data is generated.
+4. Excalidraw renders the diagram automatically.
+5. Users can further edit and customize the generated diagram.
 
-Everything runs locally. No deployment, no production cloud infrastructure.
+### Example Prompt
 
-## Getting help
+```text
+Create a flowchart for an online shopping system.
+```
 
-- The lesson notes have full code blocks, so any time you're stuck, the answer is probably in the next branch's notes.
-- Issues with the course material → open a GitHub issue.
+### AI Generated Output
+
+```text
+Start
+  ↓
+Browse Products
+  ↓
+Add to Cart
+  ↓
+Payment
+  ↓
+Order Confirmation
+  ↓
+End
+```
+
+## 📸 Screenshots
+
+Add screenshots here:
+
+```markdown
+![Home Page](screenshots/home.png)
+![AI Diagram Generation](screenshots/ai-generation.png)
+```
+
+## 🔮 Future Enhancements
+
+* Voice-to-diagram generation
+* Multi-user collaboration
+* AI diagram optimization
+* UML diagram generation
+* Database schema generation
+* Architecture diagram generation
+* Project documentation visualization
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a new branch
+
+```bash
+git checkout -b feature-name
+```
+
+3. Commit changes
+
+```bash
+git commit -m "Added new feature"
+```
+
+4. Push changes
+
+```bash
+git push origin feature-name
+```
+
+5. Create a Pull Request
+
+## 🐛 Issues
+
+If you find a bug or have a feature request, please open an issue in the repository.
+
+## 📜 License
+
+This project is licensed under the MIT License.
+
+## 👨‍💻 Author
+
+**Pranshu Tiwari**
+
+* GitHub: https://github.com/Pranshu51
+
+---
+
+⭐ If you found this project useful, consider giving it a star on GitHub.
